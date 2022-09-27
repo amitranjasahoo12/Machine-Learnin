@@ -1,0 +1,168 @@
+def outliers(data, replace=np.median(data,axis=0)):
+    Q1, Q3 = np.percentile(data, [25 ,75])
+    IQR = Q3-Q1
+    return data.where((data > (Q1 - 1.5 * IQR)) & (data < (Q3 + 1.5 * IQR)), replace)
+
+========================================
+
+def outlier_treat(data):
+    data = np.array(data).copy().astype(float)
+    Q1 = np.quantile(data, .25)
+    Q3 = np.quantile(data, .75)
+    
+    # Define IQR
+    IQR = Q3 - Q1
+    
+    ### Define the allowed limits for 'Normal Data'
+    lower_allowed_limit = Q1 - (1.5 * IQR)
+    upper_allowed_limit = Q3 + (1.5 * IQR)
+    
+    #set values below the lower limit/above the upper limit as nan
+    data[(data<lower_allowed_limit) | (data>upper_allowed_limit)] = np.median
+    return data
+
+================================================================
+median = df['Values'].median()
+std = df['Values'].std()
+outliers = (df['Values'] - median).abs() > std
+df[outliers] = np.nan
+df['Values'].fillna(median, inplace=True)
+========================================
+
+
+def outlier_treat(data):
+    data = np.array(data).copy().astype(float)
+    Q1 = np.quantile(data, .25)
+    Q3 = np.quantile(data, .75)
+    
+    # Define IQR
+    IQR = Q3 - Q1
+    
+    ### Define the allowed limits for 'Normal Data'
+    lower_allowed_limit = Q1 - (1.5 * IQR)
+    upper_allowed_limit = Q3 + (1.5 * IQR)
+    
+    #set values below the lower limit/above the upper limit as nan
+    data[(data<lower_allowed_limit) | (data>upper_allowed_limit)] = np.nan
+    #data.fillna(data.median,inplace=True)
+    return data
+
+======================================
+
+def find_outliers(data_in, col_name):
+    Q1 = data_in[col_name].quantile(0.25)
+    Q3 = data_in[col_name].quantile(0.75)
+    IQR = Q3-Q1
+    lower_fence  = Q1-1.5*IQR
+    upper_fence = Q3+1.5*IQR
+    
+    outlier_list=((data_in[col_name] <= lower_fence) | (data_in[col_name] >= upper_fence)).tolist()
+   # outlier_indexes=[i for i, x in enumerate(outlier_list) if x]
+    new_df = data_in.join(data_in[(data_in[col] > lower_fence) & (data_in[col] < upper_fence)], how='inner')
+    
+    return outlier_indexes
+
+
+#----------------------
+
+def find_outliers(data_in, col_name):
+    Q1 = data_in[col_name].quantile(0.25)
+    Q3 = data_in[col_name].quantile(0.75)
+    IQR = Q3-Q1
+    lower_fence  = Q1-1.5*IQR
+    upper_fence = Q3+1.5*IQR
+    
+    outlier_list=((data_in[col_name] <= lower_fence) | (data_in[col_name] >= upper_fence)).tolist()
+   # outlier_indexes=[i for i, x in enumerate(outlier_list) if x]
+    new_df = data_in.join(data_in[(data_in[col] > lower_fence) & (data_in[col] < upper_fence)], how='inner')
+    
+    return outlier_indexes
+
+
+#----------------------
+
+bad_indexes=[]
+for col in data.columns:
+    if data[col].dtype in ["int64", "float64"]:
+        outlierindexes= find_outliers(data, col)
+        bad_indexes.extend(outlierindexes)
+print(f"All Bad indexes:{bad_indexes}")
+
+========================================
+
+
+def find_outliers(data_in, col_name):
+    Q1 = data_in[col_name].quantile(0.25)
+    Q3 = data_in[col_name].quantile(0.75)
+    IQR = Q3-Q1
+    lower_fence  = Q1-1.5*IQR
+    upper_fence = Q3+1.5*IQR
+    
+    outlier_list=((data_in[col_name] <= lower_fence) | (data_in[col_name] >= upper_fence)).tolist()
+   # outlier_indexes=[i for i, x in enumerate(outlier_list) if x]
+    new_df = data_in.join(data_in[(data_in[col] > lower_fence) & (data_in[col] < upper_fence)], how='inner')
+    
+    return outlier_indexes
+
+======================================
+
+# Get Outlier by IQR 
+def get_outlier_index(df,column):
+    
+     # '''function to compute an outlier using IQR ,
+     # input  -> data Frame and column name .
+    # return -> index of outlier values in the column 
+
+      
+    first =df[column].describe()[4]
+    third =df[column].describe()[6]
+    iqr =  third -first 
+    min = first - 1.5*iqr
+    max = third + 1.5*iqr
+    print('------------------------------------------')
+
+    print('minum : ' ,min)
+    
+    print('maximun : ' ,max)
+    
+    index = df[(df[column]>max) | ( df[column]<min)].index
+    
+    print('# outlier Using STD :  ',len(index))
+    print('------------------------------------------')
+
+    return index
+
+-------------------------------------------------------------
+# Get Outlier by standard deviation 
+def out_std(df, column):
+    '''
+    function to compute an outlier using standard deviation  ,
+    input  -> data Frame and column name .
+    return -> lower , upper bound ofoutlier values in the column , data frame 
+    of new column after drop outlier
+  
+    '''
+    # calculate the mean and standard deviation of the data frame
+    data_mean, data_std = df[column].mean(), df[column].std()
+    
+    # calculate the cutoff value
+    cut_off = data_std * 3
+    
+    # calculate the lower and upper bound value
+    lower, upper = data_mean - cut_off, data_mean + cut_off
+    
+    print('------------------------------------------')
+    print('OUTLIER USNING STD MEASURE')
+    print('The lower bound value is', lower)
+
+    print('The upper bound value is', upper)
+    print('------------------------------------------')
+
+    # Calculate the number of records below and above lower and above bound value respectively
+    df1 = df[df[column] > upper]
+    df2 = df[df[column] < lower]
+    
+    # combine Data 
+    df_out =df1.append(df2)
+    
+    return  lower,upper,df_out
